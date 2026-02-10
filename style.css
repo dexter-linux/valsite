@@ -114,3 +114,31 @@ h1 { font-family: 'Great Vibes', cursive; color: #d81b60; font-size: 3rem; }
 }
 
 #scrollToTop.show { opacity: 1; visibility: visible; }
+
+/* Album Grid Styling */
+.album-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.photo-card {
+    background: white;
+    padding: 15px;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.photo-card:hover {
+    transform: rotate(2deg) scale(1.02);
+}
+
+.upload-section input {
+    width: 90%;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ffb6c1;
+    border-radius: 10px;
+}
