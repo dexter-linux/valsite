@@ -31,7 +31,10 @@
     <div class="container" id="chatInterface" style="display:none; max-width: 600px; height: 90vh; display: flex; flex-direction: column; background: rgba(255,255,255,0.9); border-radius: 20px; padding: 20px;">
         <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <h2 id="welcomeUser" style="font-family: 'Great Vibes'; font-size: 2.5rem; color: #d81b60; margin: 0;"></h2>
-            <button onclick="logout()" style="background: none; border: none; color: #d81b60; cursor: pointer; text-decoration: underline;">Logout</button>
+            <div>
+                <button onclick="loadMessages()" style="background:none;border:none;color:#d81b60;cursor:pointer;text-decoration:underline;margin-right:15px;font-size:0.9rem;">Refresh ♻️</button>
+                <button onclick="logout()" style="background:none;border:none;color:#d81b60;cursor:pointer;text-decoration:underline;">Logout</button>
+            </div>
         </header>
        
         <div class="chat-box" id="chatBox" style="flex-grow: 1; overflow-y: auto; background: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 12px; border: 1px solid #fce4ec;">
@@ -51,29 +54,27 @@
 
         const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdVG70G7V-NzGqCdtwOe2xuMmLUhtjQTJpbcJ5OBwU4KZnEiw/formResponse";
 
-        // Update these two XXXXXXXXX with real numbers from your pre-filled link
-const ENTRY_SENDER    = "entry.235096891";    // Sender (already confirmed earlier)
-const ENTRY_MESSAGE   = "entry.262317851";    // Message (from textarea name)
-const ENTRY_ATTACH    = "entry.1055245339";   // Attachment (from input name)
+        // FINAL WORKING ENTRY IDs (confirmed from your inspections)
+        const ENTRY_SENDER    = "entry.235096891";    // Sender
+        const ENTRY_MESSAGE   = "entry.262317851";    // Message
+        const ENTRY_ATTACH    = "entry.1055245339";   // Attachment
 
-        // Update to your real published CSV URL (File → Share → Publish to web → CSV)
-        const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQzoKVF_bSr6HWRrmnjlcwHie_OAfinkk4YBkDfWtDnoJ6yyNQSactFMqvqc0Hmy4N3JQGqN_gVqpbU/pub?output=csv";
+        const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/10xZkxnVj0S-oEvLCb8WxZusBCKTJp80nwhpdIjBgsAk/pub?output=csv";
 
         let currentUser = "";
 
         function checkLogin() {
             const user = document.getElementById('userSelect').value;
             const pass = document.getElementById('passInput').value;
-            const error = document.getElementById('loginError');
             if (user && PASSWORDS[user] === pass) {
                 currentUser = user;
                 document.getElementById('loginSection').style.display = 'none';
                 document.getElementById('chatInterface').style.display = 'flex';
                 document.getElementById('welcomeUser').innerText = "For " + user;
                 loadMessages();
-                setInterval(loadMessages, 6000);
+                setInterval(loadMessages, 12000); // every 12 seconds
             } else {
-                error.style.display = 'block';
+                document.getElementById('loginError').style.display = 'block';
                 document.getElementById('passInput').value = "";
             }
         }
@@ -83,10 +84,7 @@ const ENTRY_ATTACH    = "entry.1055245339";   // Attachment (from input name)
             const attach = document.getElementById('attachInput').value.trim();
             const btn = document.getElementById('sendBtn');
 
-            if (!text && !attach) {
-                alert("Please add a whisper or an attachment 🌊");
-                return;
-            }
+            if (!text && !attach) return;
 
             btn.disabled = true;
             btn.innerText = "Sending...";
@@ -97,17 +95,11 @@ const ENTRY_ATTACH    = "entry.1055245339";   // Attachment (from input name)
             formData.append(ENTRY_ATTACH, attach);
 
             try {
-                await fetch(GOOGLE_FORM_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: formData
-                });
+                await fetch(GOOGLE_FORM_URL, { method: 'POST', mode: 'no-cors', body: formData });
                 document.getElementById('msgInput').value = "";
                 document.getElementById('attachInput').value = "";
-                setTimeout(loadMessages, 5000); // Wait for sheet update
-            } catch (e) {
-                console.error("Submission failed", e);
-                alert("Something went wrong... but it might still arrive ♡");
+                document.getElementById('chatBox').innerHTML = '<p style="text-align:center;color:#ff69b4;font-style:italic;">Whisper sent! Arriving soon... 🌊</p>';
+                setTimeout(loadMessages, 8000);
             } finally {
                 btn.disabled = false;
                 btn.innerText = "Send Whisper 🌊";
@@ -116,32 +108,26 @@ const ENTRY_ATTACH    = "entry.1055245339";   // Attachment (from input name)
 
         async function loadMessages() {
             try {
-                const res = await fetch(SHEET_CSV_URL + "?cb=" + Date.now());
+                const res = await fetch(SHEET_CSV_URL + "?t=" + Date.now());
                 const csvText = await res.text();
 
-                const parsed = Papa.parse(csvText, {
-                    header: true,
-                    skipEmptyLines: true,
-                    trimHeaders: true
-                });
-
+                const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
                 const box = document.getElementById('chatBox');
                 box.innerHTML = "";
 
                 if (parsed.data.length === 0) {
-                    box.innerHTML = '<p style="text-align:center; color:#ff69b4;">No messages yet... send the first whisper ♡</p>';
+                    box.innerHTML = "<p style='text-align:center;color:#ff69b4;'>No whispers yet... be the first ♡</p>";
                     return;
                 }
 
-                const rows = parsed.data.reverse();
+                // Show oldest first → newest at bottom (real chat flow)
+                parsed.data.forEach(row => {
+                    const sender = (row.Sender || "").trim();
+                    const message = (row.Message || "").trim();
+                    const attachment = (row.Attachment || "").trim();
+                    const timestamp = row.Timestamp || "";
 
-                rows.forEach(row => {
-                    const sender = (row.Sender || row.sender || "").trim();
-                    const message = (row.Message || row.message || "").trim();
-                    const attachment = (row.Attachment || row.attachment || "").trim();
-                    const timestamp = row.Timestamp || row.timestamp || "";
-
-                    if (!sender || (!message && !attachment)) return;
+                    if (!sender) return;
 
                     const msgDiv = document.createElement('div');
                     msgDiv.style.maxWidth = "85%";
@@ -149,39 +135,30 @@ const ENTRY_ATTACH    = "entry.1055245339";   // Attachment (from input name)
                     msgDiv.style.borderRadius = "18px";
                     msgDiv.style.fontSize = "0.95rem";
                     msgDiv.style.boxShadow = "0 2px 8px rgba(0,0,0,0.08)";
-                    msgDiv.style.wordBreak = "break-word";
                     msgDiv.style.marginBottom = "8px";
+                    msgDiv.style.alignSelf = sender === currentUser ? "flex-end" : "flex-start";
+                    msgDiv.style.background = sender === currentUser 
+                        ? "linear-gradient(135deg, #ff69b4, #ff8cc4)" 
+                        : "#ffffff";
+                    msgDiv.style.color = sender === currentUser ? "white" : "#333";
+                    msgDiv.style.border = sender === currentUser ? "none" : "1px solid #ffb6c1";
+                    msgDiv.style.borderBottomRightRadius = sender === currentUser ? "4px" : "18px";
+                    msgDiv.style.borderBottomLeftRadius = sender !== currentUser ? "4px" : "18px";
 
-                    if (sender === currentUser) {
-                        msgDiv.style.alignSelf = "flex-end";
-                        msgDiv.style.background = "linear-gradient(135deg, #ff69b4, #ff8cc4)";
-                        msgDiv.style.color = "white";
-                        msgDiv.style.borderBottomRightRadius = "4px";
-                    } else {
-                        msgDiv.style.alignSelf = "flex-start";
-                        msgDiv.style.backgroundColor = "#ffffff";
-                        msgDiv.style.border = "1px solid #ffb6c1";
-                        msgDiv.style.color = "#333";
-                        msgDiv.style.borderBottomLeftRadius = "4px";
-                    }
-
-                    let content = `<strong>${sender}</strong><br>`;
+                    let content = `<strong>${sender}</strong>`;
                     if (timestamp) {
                         const date = new Date(timestamp);
-                        if (!isNaN(date)) {
-                            content += `<small style="opacity:0.8;">${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</small><br>`;
-                        }
+                        content += `<br><small style="opacity:0.8;">${date.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</small>`;
                     }
-                    if (message) content += message.replace(/\n/g, '<br>') + '<br>';
-
+                    if (message) content += `<br>${message.replace(/\n/g, '<br>')}`;
                     if (attachment) {
-                        const lower = attachment.toLowerCase();
-                        if (lower.endsWith('.mp4') || lower.endsWith('.webm')) {
-                            content += `<video src="${attachment}" controls style="width:100%; max-width:320px; margin-top:8px; border-radius:12px;"></video>`;
-                        } else if (lower.match(/\.(jpg|jpeg|png|gif|webp)$/)) {
-                            content += `<img src="${attachment}" style="width:100%; max-width:320px; margin-top:8px; border-radius:12px;" onerror="this.outerHTML='<p style=\\'color:#aaa; font-size:0.85rem;\\'>Image not available ♡</p>'">`;
+                        const l = attachment.toLowerCase();
+                        if (l.endsWith('.mp4') || l.endsWith('.webm')) {
+                            content += `<video src="${attachment}" controls style="width:100%;max-width:320px;margin-top:8px;border-radius:12px;"></video>`;
+                        } else if (/\.(jpg|jpeg|png|gif|webp)$/i.test(l)) {
+                            content += `<img src="${attachment}" style="width:100%;max-width:320px;margin-top:8px;border-radius:12px;" onerror="this.style.display='none'">`;
                         } else {
-                            content += `<a href="${attachment}" target="_blank" style="color:#ff69b4;">Open attachment ↗</a>`;
+                            content += `<br><a href="${attachment}" target="_blank" style="color:#ff69b4;">Open attachment ↗</a>`;
                         }
                     }
 
@@ -192,14 +169,11 @@ const ENTRY_ATTACH    = "entry.1055245339";   // Attachment (from input name)
                 box.scrollTop = box.scrollHeight;
 
             } catch (e) {
-                console.error("Load error:", e);
-                document.getElementById('chatBox').innerHTML = '<p style="text-align:center; color:#d81b60;">Tides are quiet... try again soon 💧</p>';
+                console.error(e);
             }
         }
 
-        function logout() {
-            location.reload();
-        }
+        function logout() { location.reload(); }
     </script>
 </body>
 </html>
