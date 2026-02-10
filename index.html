@@ -14,6 +14,27 @@
     </audio>
 <a href="scroll.html" class="nav-link">View Our Poem Scroll 📜✨</a>
 <p><a href="album.html" class="nav-link">View Our Pearl Gallery Album 🌸📸</a></p>
+    <p>
+    <a href="messages.html" class="nav-link">
+        Messages 💌 <span id="msgBadge" class="unread-badge" style="display:none;">0</span>
+    </a>
+</p>
+
+<script>
+    // Logic to show unread badge
+    // Since we don't know who is looking at the home page, 
+    // we check for both. In a real app, the login happens first.
+    window.addEventListener('load', () => {
+        const u1 = parseInt(localStorage.getItem('unread_Mideva') || 0);
+        const u2 = parseInt(localStorage.getItem('unread_Gachara') || 0);
+        const total = u1 + u2;
+        if(total > 0) {
+            const badge = document.getElementById('msgBadge');
+            badge.style.display = 'inline';
+            badge.innerText = total;
+        }
+    });
+</script>
     <div class="aquarium-bg"></div>
     <div class="bubbles"></div>
 
