@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Pearl Gallery - Album</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="aquarium-bg"></div>
+
+    <div class="container">
+        <h1>Our Pearl Gallery</h1>
+        <p>Capturing ripples of time with you, Lavender.</p>
+
+        <div class="upload-section" style="background: #fff5f7; padding: 20px; border-radius: 15px; margin-bottom: 30px;">
+            <h3>Add a New Memory</h3>
+            <input type="text" id="imgUrl" placeholder="Image URL (or filename in GitHub)">
+            <input type="text" id="imgCaption" placeholder="Write a small caption...">
+            <button id="saveMemoryBtn" style="margin-top:10px; background:#ff69b4; color:white; border:none; padding:10px 20px; border-radius:20px; cursor:pointer;">Save to Album</button>
+        </div>
+
+        <div id="albumGrid" class="album-grid">
+            </div>
+
+        <a href="index.html" class="nav-link">← Back Home</a>
+    </div>
+
+    <script>
+        const saveBtn = document.getElementById('saveMemoryBtn');
+        const grid = document.getElementById('albumGrid');
+
+        // Load saved memories from LocalStorage
+        window.onload = () => {
+            const saved = JSON.parse(localStorage.getItem('oceanMemories')) || [];
+            saved.forEach(item => addImageToGrid(item.url, item.caption, item.date));
+        };
+
+        saveBtn.onclick = () => {
+            const url = document.getElementById('imgUrl').value;
+            const caption = document.getElementById('imgCaption').value;
+            const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+            if(url && caption) {
+                const memory = { url, caption, date: today };
+                const saved = JSON.parse(localStorage.getItem('oceanMemories')) || [];
+                saved.push(memory);
+                localStorage.setItem('oceanMemories', JSON.stringify(saved));
+                
+                addImageToGrid(url, caption, today);
+                
+                // Clear inputs
+                document.getElementById('imgUrl').value = '';
+                document.getElementById('imgCaption').value = '';
+            }
+        };
+
+        function addImageToGrid(url, caption, date) {
+            const card = document.createElement('div');
+            card.className = 'photo-card';
+            card.innerHTML = `
+                <img src="${url}" alt="Memory" style="width:100%; border-radius:10px;">
+                <p style="font-size:0.8rem; color:#ff69b4; margin-top:10px;">${date}</p>
+                <p style="font-style:italic;">"${caption}"</p>
+            `;
+            grid.prepend(card);
+        }
+    </script>
+</body>
+</html>
