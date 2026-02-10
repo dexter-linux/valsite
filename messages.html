@@ -6,7 +6,6 @@
     <title>Ocean Whispers - Messages</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
-    <!-- PapaParse for reliable CSV parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 </head>
 <body>
@@ -36,7 +35,7 @@
         </header>
        
         <div class="chat-box" id="chatBox" style="flex-grow: 1; overflow-y: auto; background: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 12px; border: 1px solid #fce4ec;">
-            <p style="text-align: center; color: #ff69b4; font-style: italic;">Sifting through the tides... 💭</p>
+            <p style="text-align: center; color: #ff69b4; font-style: italic;">Sifting through the tides...</p>
         </div>
        
         <div class="input-area" style="background: #fff5f7; padding: 15px; border-radius: 15px;">
@@ -50,11 +49,15 @@
     <script>
         const PASSWORDS = { "Mideva": "lavender2026", "Gachara": "gachara2026" };
 
-        // Your Apps Script web app URL
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw5lAnuNXPgAvFDqCsxiMVlCM1yeBgOvmf8zDVxYMWAj5yCENsI3dA4b8wBZXhfCCxo/exec";
+        const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdVG70G7V-NzGqCdtwOe2xuMmLUhtjQTJpbcJ5OBwU4KZnEiw/formResponse";
 
-        // Published CSV link (update this to your real one!)
-        const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/10xZkxnVj0S-oEvLCb8WxZusBCKTJp80nwhpdIjBgsAk/pub?output=csv";  // ← CHANGE TO YOUR PUB LINK
+        // Update these two XXXXXXXXX with real numbers from your pre-filled link
+        const ENTRY_SENDER    = "entry.235096891";     // Confirmed from your HTML snippet
+        const ENTRY_MESSAGE   = "entry.XXXXXXXXX";     // ← REPLACE (for Message field)
+        const ENTRY_ATTACH    = "entry.XXXXXXXXX";     // ← REPLACE (for Attachment field)
+
+        // Update to your real published CSV URL (File → Share → Publish to web → CSV)
+        const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/10xZkxnVj0S-oEvLCb8WxZusBCKTJp80nwhpdIjBgsAk/pub?output=csv";
 
         let currentUser = "";
 
@@ -68,7 +71,7 @@
                 document.getElementById('chatInterface').style.display = 'flex';
                 document.getElementById('welcomeUser').innerText = "For " + user;
                 loadMessages();
-                setInterval(loadMessages, 6000);  // Poll every 6s
+                setInterval(loadMessages, 6000);
             } else {
                 error.style.display = 'block';
                 document.getElementById('passInput').value = "";
@@ -81,38 +84,30 @@
             const btn = document.getElementById('sendBtn');
 
             if (!text && !attach) {
-                alert("Add at least a whisper or attachment 🌊");
+                alert("Please add a whisper or an attachment 🌊");
                 return;
             }
 
             btn.disabled = true;
             btn.innerText = "Sending...";
 
-            const params = new URLSearchParams();
-            params.append("sender", currentUser);
-            params.append("message", text || " ");  // avoid blank rejection
-            params.append("attachment", attach);
+            const formData = new FormData();
+            formData.append(ENTRY_SENDER, currentUser);
+            formData.append(ENTRY_MESSAGE, text || " ");
+            formData.append(ENTRY_ATTACH, attach);
 
             try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: "POST",
-                    body: params
+                await fetch(GOOGLE_FORM_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: formData
                 });
-
-                if (!response.ok) throw new Error("Network error");
-
-                const result = await response.json().catch(() => ({status: "unknown"}));
-
-                if (result.status === "success") {
-                    document.getElementById('msgInput').value = "";
-                    document.getElementById('attachInput').value = "";
-                    setTimeout(loadMessages, 4000);  // Give sheet time to update
-                } else {
-                    alert("Whisper lost in the tides... try again ♡");
-                }
+                document.getElementById('msgInput').value = "";
+                document.getElementById('attachInput').value = "";
+                setTimeout(loadMessages, 5000); // Wait for sheet update
             } catch (e) {
-                console.error("Send error:", e);
-                alert("Connection issue... whisper may still arrive later 🌊");
+                console.error("Submission failed", e);
+                alert("Something went wrong... but it might still arrive ♡");
             } finally {
                 btn.disabled = false;
                 btn.innerText = "Send Whisper 🌊";
@@ -122,7 +117,6 @@
         async function loadMessages() {
             try {
                 const res = await fetch(SHEET_CSV_URL + "?cb=" + Date.now());
-                if (!res.ok) throw new Error("CSV fetch failed");
                 const csvText = await res.text();
 
                 const parsed = Papa.parse(csvText, {
@@ -135,11 +129,11 @@
                 box.innerHTML = "";
 
                 if (parsed.data.length === 0) {
-                    box.innerHTML = '<p style="text-align:center; color:#ff69b4;">No whispers yet... start the ocean ♡</p>';
+                    box.innerHTML = '<p style="text-align:center; color:#ff69b4;">No messages yet... send the first whisper ♡</p>';
                     return;
                 }
 
-                const rows = parsed.data.reverse(); // newest first
+                const rows = parsed.data.reverse();
 
                 rows.forEach(row => {
                     const sender = (row.Sender || row.sender || "").trim();
@@ -185,9 +179,9 @@
                         if (lower.endsWith('.mp4') || lower.endsWith('.webm')) {
                             content += `<video src="${attachment}" controls style="width:100%; max-width:320px; margin-top:8px; border-radius:12px;"></video>`;
                         } else if (lower.match(/\.(jpg|jpeg|png|gif|webp)$/)) {
-                            content += `<img src="${attachment}" style="width:100%; max-width:320px; margin-top:8px; border-radius:12px;" onerror="this.outerHTML='<p style=\\'color:#aaa; font-size:0.85rem;\\'>Image unavailable ♡</p>'">`;
+                            content += `<img src="${attachment}" style="width:100%; max-width:320px; margin-top:8px; border-radius:12px;" onerror="this.outerHTML='<p style=\\'color:#aaa; font-size:0.85rem;\\'>Image not available ♡</p>'">`;
                         } else {
-                            content += `<a href="${attachment}" target="_blank" style="color:#ff69b4;">Attachment ↗</a>`;
+                            content += `<a href="${attachment}" target="_blank" style="color:#ff69b4;">Open attachment ↗</a>`;
                         }
                     }
 
@@ -199,7 +193,7 @@
 
             } catch (e) {
                 console.error("Load error:", e);
-                document.getElementById('chatBox').innerHTML = '<p style="text-align:center; color:#d81b60;">Tides are slow... refresh soon 💧</p>';
+                document.getElementById('chatBox').innerHTML = '<p style="text-align:center; color:#d81b60;">Tides are quiet... try again soon 💧</p>';
             }
         }
 
