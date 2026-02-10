@@ -1,51 +1,171 @@
-<div id="loginSection" class="login-overlay">
-    <div class="container" style="max-width: 350px; padding: 30px;">
-        <h1 style="font-family: 'Great Vibes'; font-size: 2.5rem; margin-bottom: 20px;">Ocean Entry</h1>
-        
-        <select id="userSelect" style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ffb6c1;">
-            <option value="" disabled selected>Select Your Name</option>
-            <option value="Mideva">Mideva</option>
-            <option value="Gachara">Gachara</option>
-        </select>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ocean Whispers - Messages</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="aquarium-bg"></div>
 
-        <input type="password" id="passInput" placeholder="Enter Secret Code" style="width: 100%; padding: 10px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #ffb6c1;">
-        
-        <button onclick="checkLogin()" class="modal-btn" style="width: 100%;">Unlock Whispers ✨</button>
-        <p id="loginError" style="color: red; font-size: 0.8rem; margin-top: 10px; display: none;">Wrong code, try again pearl.</p>
+    <div id="loginSection" class="login-overlay">
+        <div class="container" style="max-width: 350px; padding: 30px; background: rgba(255,255,255,0.95); border-radius: 20px;">
+            <h1 style="font-family: 'Great Vibes'; font-size: 3rem; color: #d81b60; margin-bottom: 10px;">MIDARA</h1>
+            <p style="margin-bottom: 20px; color: #666;">Unlock our whispers, love.</p>
+            
+            <select id="userSelect" style="width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 10px; border: 1px solid #ffb6c1; background: white;">
+                <option value="" disabled selected>Who are you?</option>
+                <option value="Mideva">Mideva</option>
+                <option value="Gachara">Gachara</option>
+            </select>
+
+            <input type="password" id="passInput" placeholder="Secret Code" style="width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 10px; border: 1px solid #ffb6c1;">
+            
+            <button onclick="checkLogin()" class="modal-btn" style="width: 100%; background: #ff69b4; color: white; border: none; padding: 12px; border-radius: 25px; cursor: pointer; font-weight: bold;">Enter the Deep ✨</button>
+            <p id="loginError" style="color: #d81b60; font-size: 0.85rem; margin-top: 15px; display: none;">That's not our code, pearl. ❤️</p>
+        </div>
     </div>
-</div>
 
-<script>
-    // Configuration for passwords
-    const PASSWORDS = {
-        "Mideva": "lavender2026",
-        "Gachara": "gachara2026"
-    };
-
-    function checkLogin() {
-        const selectedUser = document.getElementById('userSelect').value;
-        const enteredPass = document.getElementById('passInput').value;
-        const errorMsg = document.getElementById('loginError');
-
-        if (selectedUser && enteredPass === PASSWORDS[selectedUser]) {
-            // Success! Proceed to chat
-            login(selectedUser);
-        } else {
-            // Fail
-            errorMsg.style.display = 'block';
-            document.getElementById('passInput').value = "";
-        }
-    }
-
-    function login(user) {
-        currentUser = user;
-        document.getElementById('loginSection').style.display = 'none';
-        document.getElementById('chatInterface').style.display = 'block';
-        document.getElementById('welcomeUser').innerText = "Hello, " + user;
+    <div class="container" id="chatInterface" style="display:none; max-width: 600px; height: 90vh; display: flex; flex-direction: column; background: rgba(255,255,255,0.9); border-radius: 20px; padding: 20px;">
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h2 id="welcomeUser" style="font-family: 'Great Vibes'; font-size: 2.5rem; color: #d81b60; margin: 0;"></h2>
+            <button onclick="logout()" style="background: none; border: none; color: #d81b60; cursor: pointer; text-decoration: underline;">Logout</button>
+        </header>
         
-        loadMessages();
-        setInterval(loadMessages, 5000);
-    }
-    
-    // ... rest of your sendMessage and loadMessages functions ...
-</script>
+        <div class="chat-box" id="chatBox" style="flex-grow: 1; overflow-y: auto; background: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 12px; border: 1px solid #fce4ec;">
+            <p style="text-align: center; color: #ff69b4; font-style: italic;">Sifting through the tides...</p>
+        </div>
+        
+        <div class="input-area" style="background: #fff5f7; padding: 15px; border-radius: 15px;">
+            <input type="text" id="msgInput" placeholder="Write a whisper..." style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ffb6c1; margin-bottom: 10px;">
+            <input type="text" id="attachInput" placeholder="File path (e.g., images/us.jpg)" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #fff; font-size: 0.8rem; margin-bottom: 10px;">
+            <button onclick="sendMessage()" id="sendBtn" style="width: 100%; background: #ff69b4; color: white; border: none; padding: 12px; border-radius: 20px; cursor: pointer; font-weight: bold;">Send Whisper 🌊</button>
+        </div>
+        <a href="index.html" class="nav-link" style="text-align: center; display: block; margin-top: 10px;">← Back Home</a>
+    </div>
+
+    <script>
+        const PASSWORDS = { "Mideva": "lavender2026", "Gachara": "gachara2026" };
+        
+        // --- GOOGLE FORM CONFIG ---
+        const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/YOUR_FORM_ID/formResponse";
+        const ENTRY_SENDER = "entry.111111"; 
+        const ENTRY_MESSAGE = "entry.222222";
+        const ENTRY_ATTACH = "entry.333333";
+
+        // --- YOUR SPREADSHEET LINK ---
+        const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQzoKVF_bSr6HWRrmnjlcwHie_OAfinkk4YBkDfWtDnoJ6yyNQSactFMqvqc0Hmy4N3JQGqN_gVqpbU/pub?output=csv";
+
+        let currentUser = "";
+
+        function checkLogin() {
+            const user = document.getElementById('userSelect').value;
+            const pass = document.getElementById('passInput').value;
+            const error = document.getElementById('loginError');
+
+            if (user && PASSWORDS[user] === pass) {
+                currentUser = user;
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('chatInterface').style.display = 'flex';
+                document.getElementById('welcomeUser').innerText = "For " + user;
+                loadMessages();
+                setInterval(loadMessages, 8000); // Check for new messages every 8s
+            } else {
+                error.style.display = 'block';
+                document.getElementById('passInput').value = "";
+            }
+        }
+
+        async function sendMessage() {
+            const text = document.getElementById('msgInput').value;
+            const attach = document.getElementById('attachInput').value;
+            const btn = document.getElementById('sendBtn');
+
+            if(!text && !attach) return;
+
+            btn.disabled = true;
+            btn.innerText = "Sending...";
+
+            const formData = new FormData();
+            formData.append(ENTRY_SENDER, currentUser);
+            formData.append(ENTRY_MESSAGE, text);
+            formData.append(ENTRY_ATTACH, attach);
+
+            try {
+                await fetch(GOOGLE_FORM_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', 
+                    body: formData
+                });
+                document.getElementById('msgInput').value = "";
+                document.getElementById('attachInput').value = "";
+                loadMessages();
+            } catch (e) {
+                console.error("Submission error", e);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Send Whisper 🌊";
+            }
+        }
+
+        async function loadMessages() {
+            try {
+                // cachebuster prevents the browser from loading an old version of the CSV
+                const res = await fetch(SHEET_CSV_URL + "&cb=" + Date.now());
+                const csvData = await res.text();
+                
+                // Simple CSV row splitter
+                const rows = csvData.split(/\r?\n/).slice(1); 
+                const box = document.getElementById('chatBox');
+                box.innerHTML = "";
+
+                rows.forEach(row => {
+                    // Regex to handle CSV columns even if they contain commas
+                    const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+                    if (!cols || cols.length < 3) return;
+
+                    const sender = cols[1].replace(/"/g, "").trim();
+                    const text = cols[2].replace(/"/g, "").trim();
+                    const attach = cols[3] ? cols[3].replace(/"/g, "").trim() : "";
+
+                    const msgDiv = document.createElement('div');
+                    msgDiv.style.maxWidth = "85%";
+                    msgDiv.style.padding = "12px";
+                    msgDiv.style.borderRadius = "15px";
+                    msgDiv.style.fontSize = "0.95rem";
+                    msgDiv.style.boxShadow = "0 2px 5px rgba(0,0,0,0.05)";
+
+                    if (sender === currentUser) {
+                        msgDiv.style.alignSelf = "flex-end";
+                        msgDiv.style.backgroundColor = "#ff69b4";
+                        msgDiv.style.color = "white";
+                        msgDiv.style.borderBottomRightRadius = "2px";
+                    } else {
+                        msgDiv.style.alignSelf = "flex-start";
+                        msgDiv.style.backgroundColor = "#fff";
+                        msgDiv.style.border = "1px solid #ffb6c1";
+                        msgDiv.style.color = "#444";
+                        msgDiv.style.borderBottomLeftRadius = "2px";
+                    }
+
+                    let inner = `<div>${text}</div>`;
+                    if(attach && attach !== "") {
+                        if(attach.toLowerCase().includes('.mp4')) {
+                            inner += `<video src="${attach}" controls style="width:100%; margin-top:8px; border-radius:10px;"></video>`;
+                        } else {
+                            inner += `<img src="${attach}" style="width:100%; margin-top:8px; border-radius:10px;" onerror="this.style.display='none'">`;
+                        }
+                    }
+                    msgDiv.innerHTML = inner;
+                    box.appendChild(msgDiv);
+                });
+                box.scrollTop = box.scrollHeight;
+            } catch (e) { console.log("Refresh error", e); }
+        }
+
+        function logout() { location.reload(); }
+    </script>
+</body>
+</html>
