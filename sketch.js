@@ -20,10 +20,11 @@ document.addEventListener('DOMContentLoaded', () => {
         response.classList.remove('hidden');
     });
 
-    // Scroll to Top functionality
+    // --- SCROLL TO TOP LOGIC ---
     if (scrollToTopBtn) {
         window.addEventListener('scroll', () => {
-            if (window.scrollY > 200) {
+            // Show button after scrolling down 300px
+            if (window.scrollY > 300) {
                 scrollToTopBtn.classList.add('show');
             } else {
                 scrollToTopBtn.classList.remove('show');
@@ -85,6 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Optional: gentle background bubbles
+    // Gentle background bubbles
     setInterval(() => createBubbles(3), 4000);
 });
