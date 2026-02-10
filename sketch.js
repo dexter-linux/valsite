@@ -89,3 +89,55 @@ document.addEventListener('DOMContentLoaded', () => {
     // Gentle background bubbles
     setInterval(() => createBubbles(3), 4000);
 });
+
+// Password Configuration (Same as messages.html)
+const PASSWORDS = {
+    "Mideva": "lavender2026",
+    "Gachara": "gachara2026"
+};
+
+function attemptLogin() {
+    const user = document.getElementById('username').value;
+    const pass = document.getElementById('password').value;
+    const errorMsg = document.getElementById('login-error');
+
+    if (user && PASSWORDS[user] === pass) {
+        // Hide Login, Show App
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('main-app').style.display = 'block';
+        
+        // Personalized Welcome
+        document.getElementById('welcome-user').innerText = `Welcome, ${user} ✨`;
+        
+        // Save session locally so they don't have to log in every refresh (Optional)
+        localStorage.setItem('midara_session', user);
+        
+        // Trigger data load
+        if (typeof loadFromSheets === "function") loadFromSheets();
+        
+    } else {
+        // Show error and clear password
+        errorMsg.style.display = 'block';
+        document.getElementById('password').value = "";
+    }
+}
+
+function logout() {
+    // Clear session
+    localStorage.removeItem('midara_session');
+    
+    // Reset view
+    document.getElementById('main-app').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('password').value = "";
+    document.getElementById('login-error').style.display = 'none';
+}
+
+// Check for existing session on page load
+window.addEventListener('load', () => {
+    const savedUser = localStorage.getItem('midara_session');
+    if (savedUser) {
+        document.getElementById('username').value = savedUser;
+        // Optionally auto-login or just pre-fill the name
+    }
+});
