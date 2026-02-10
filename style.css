@@ -142,3 +142,26 @@ h1 { font-family: 'Great Vibes', cursive; color: #d81b60; font-size: 3rem; }
     border: 1px solid #ffb6c1;
     border-radius: 10px;
 }
+
+/* Login & Chat Styles */
+.login-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: #ff9a9e; z-index: 3000; display: flex; 
+    align-items: center; justify-content: center;
+}
+.chat-box {
+    height: 400px; overflow-y: auto; border: 1px solid #ffb6c1;
+    padding: 15px; border-radius: 15px; background: #fff;
+    display: flex; flex-direction: column; gap: 10px;
+}
+.message {
+    max-width: 70%; padding: 10px; border-radius: 15px;
+    position: relative; font-size: 0.9rem;
+}
+.message.sent { align-self: flex-end; background: #ff69b4; color: white; }
+.message.received { align-self: flex-start; background: #f1f1f1; color: #333; }
+.attachment-preview { display: block; max-width: 100%; margin-top: 5px; border-radius: 5px; }
+.unread-badge {
+    background: red; color: white; border-radius: 50%;
+    padding: 2px 7px; font-size: 0.7rem; margin-left: 5px;
+}
