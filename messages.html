@@ -1,131 +1,51 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ocean Whispers - Messages</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="aquarium-bg"></div>
+<div id="loginSection" class="login-overlay">
+    <div class="container" style="max-width: 350px; padding: 30px;">
+        <h1 style="font-family: 'Great Vibes'; font-size: 2.5rem; margin-bottom: 20px;">Ocean Entry</h1>
+        
+        <select id="userSelect" style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ffb6c1;">
+            <option value="" disabled selected>Select Your Name</option>
+            <option value="Mideva">Mideva</option>
+            <option value="Gachara">Gachara</option>
+        </select>
 
-    <div id="loginSection" class="login-overlay">
-        <div class="container" style="max-width: 350px;">
-            <h1 style="font-size: 2rem;">Who is here?</h1>
-            <button onclick="login('Mideva')" class="modal-btn" style="margin: 10px; width: 80%;">Mideva</button>
-            <button onclick="login('Gachara')" class="modal-btn" style="margin: 10px; width: 80%;">Gachara</button>
-        </div>
+        <input type="password" id="passInput" placeholder="Enter Secret Code" style="width: 100%; padding: 10px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #ffb6c1;">
+        
+        <button onclick="checkLogin()" class="modal-btn" style="width: 100%;">Unlock Whispers ✨</button>
+        <p id="loginError" style="color: red; font-size: 0.8rem; margin-top: 10px; display: none;">Wrong code, try again pearl.</p>
     </div>
+</div>
 
-    <div class="container" id="chatInterface" style="display:none; max-width: 600px;">
-        <h2 id="welcomeUser" style="font-family: 'Great Vibes'; font-size: 2.5rem;"></h2>
-        
-        <div class="chat-box" id="chatBox">
-            <p style="text-align: center; color: #ff69b4;">Diving for messages...</p>
-        </div>
-        
-        <div class="upload-section" style="border-top: 1px solid #ffb6c1; padding-top: 15px;">
-            <input type="text" id="msgInput" placeholder="Write a whisper..." style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ffb6c1;">
-            <input type="text" id="attachInput" placeholder="File path (e.g., images/us.jpg)" style="width: 100%; margin-top:10px; padding: 8px; font-size: 0.8rem; border-radius: 8px; border: 1px solid #ffb6c1;">
-            <button onclick="sendMessage()" id="sendBtn" class="modal-btn" style="width: 100%; margin-top: 15px;">Send into the Blue 🌊</button>
-        </div>
-        <a href="index.html" class="nav-link">← Back Home</a>
-    </div>
+<script>
+    // Configuration for passwords
+    const PASSWORDS = {
+        "Mideva": "lavender2026",
+        "Gachara": "gachara2026"
+    };
 
-    <script>
-        // --- CONFIGURATION (REPLACE THESE) ---
-        const GOOGLE_FORM_ACTION_URL = "https://docs.google.com/forms/d/e/YOUR_FORM_ID/formResponse";
-        const SENDER_ENTRY_ID = "entry.1234567"; // Find this in your Form source code
-        const MESSAGE_ENTRY_ID = "entry.8910111"; // Find this in your Form source code
-        const ATTACH_ENTRY_ID = "entry.1213141"; // Find this in your Form source code
-        
-        // Link to your Sheet CSV: File > Share > Publish to Web > Entire Document > CSV
-        const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/YOUR_SHEET_ID/pub?output=csv";
-        
-        let currentUser = "";
+    function checkLogin() {
+        const selectedUser = document.getElementById('userSelect').value;
+        const enteredPass = document.getElementById('passInput').value;
+        const errorMsg = document.getElementById('loginError');
 
-        function login(user) {
-            currentUser = user;
-            document.getElementById('loginSection').style.display = 'none';
-            document.getElementById('chatInterface').style.display = 'block';
-            document.getElementById('welcomeUser').innerText = "Hello, " + user;
-            
-            // Refresh messages every 5 seconds
-            loadMessages();
-            setInterval(loadMessages, 5000);
+        if (selectedUser && enteredPass === PASSWORDS[selectedUser]) {
+            // Success! Proceed to chat
+            login(selectedUser);
+        } else {
+            // Fail
+            errorMsg.style.display = 'block';
+            document.getElementById('passInput').value = "";
         }
+    }
 
-        async function sendMessage() {
-            const text = document.getElementById('msgInput').value;
-            const attach = document.getElementById('attachInput').value;
-            const btn = document.getElementById('sendBtn');
-
-            if(!text && !attach) return;
-
-            btn.disabled = true;
-            btn.innerText = "Sending...";
-
-            // Send to Google Form via hidden background submission
-            const formData = new FormData();
-            formData.append(SENDER_ENTRY_ID, currentUser);
-            formData.append(MESSAGE_ENTRY_ID, text);
-            formData.append(ATTACH_ENTRY_ID, attach);
-
-            try {
-                await fetch(GOOGLE_FORM_ACTION_URL, {
-                    method: 'POST',
-                    mode: 'no-cors', // Essential for Google Forms
-                    body: formData
-                });
-                
-                document.getElementById('msgInput').value = "";
-                document.getElementById('attachInput').value = "";
-                loadMessages();
-            } catch (e) {
-                console.error("Error sending message", e);
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "Send into the Blue 🌊";
-            }
-        }
-
-        async function loadMessages() {
-            try {
-                const response = await fetch(GOOGLE_SHEET_CSV_URL + "&cachebuster=" + Date.now());
-                const data = await response.text();
-                const rows = data.split('\n').slice(1); // Skip header row
-                
-                const chatBox = document.getElementById('chatBox');
-                chatBox.innerHTML = "";
-
-                rows.forEach(row => {
-                    // This regex handles CSV commas inside quotes correctly
-                    const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-                    if (!cols || cols.length < 3) return;
-
-                    const sender = cols[1].replace(/"/g, "").trim();
-                    const text = cols[2].replace(/"/g, "").trim();
-                    const attach = cols[3] ? cols[3].replace(/"/g, "").trim() : "";
-
-                    const div = document.createElement('div');
-                    div.className = `message ${sender === currentUser ? 'sent' : 'received'}`;
-                    
-                    let content = `<span>${text}</span>`;
-                    if(attach) {
-                        if(attach.endsWith('.mp4') || attach.endsWith('.mov')) {
-                            content += `<video src="${attach}" controls class="attachment-preview"></video>`;
-                        } else {
-                            content += `<img src="${attach}" class="attachment-preview" onerror="this.style.display='none'">`;
-                        }
-                    }
-                    div.innerHTML = content;
-                    chatBox.appendChild(div);
-                });
-                chatBox.scrollTop = chatBox.scrollHeight;
-            } catch (e) {
-                console.error("Error loading messages", e);
-            }
-        }
-    </script>
-</body>
-</html>
+    function login(user) {
+        currentUser = user;
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('chatInterface').style.display = 'block';
+        document.getElementById('welcomeUser').innerText = "Hello, " + user;
+        
+        loadMessages();
+        setInterval(loadMessages, 5000);
+    }
+    
+    // ... rest of your sendMessage and loadMessages functions ...
+</script>
