@@ -3,21 +3,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const noBtn = document.getElementById('noBtn');
     const response = document.getElementById('response');
     const music = document.getElementById('bgMusic');
+    const scrollToTopBtn = document.getElementById('scrollToTop');
 
-    // Optional: lower volume if too loud
-    music.volume = 0.4;
+    // Optional: lower music volume
+    if (music) music.volume = 0.4;
 
     yesBtn.addEventListener('click', () => {
         response.innerHTML = "You said YES! My ocean heart is overflowing with joy. Let's dive into forever together, Lavender. 🌊💙🐟";
         response.classList.remove('hidden');
-        createBubbles(60);   // big celebration
-        createConfetti();    // colorful hearts too
+        createBubbles(60);
+        createConfetti();
     });
 
     noBtn.addEventListener('click', () => {
         response.innerHTML = "That's okay... I'll keep swimming patiently until the tides bring you closer. 💙";
         response.classList.remove('hidden');
     });
+
+    // Scroll to Top functionality
+    if (scrollToTopBtn) {
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 200) {
+                scrollToTopBtn.classList.add('show');
+            } else {
+                scrollToTopBtn.classList.remove('show');
+            }
+        });
+
+        scrollToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    }
 
     function createBubbles(count) {
         for (let i = 0; i < count; i++) {
@@ -66,6 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Optional: start a few bubbles right away
+    // Optional: gentle background bubbles
     setInterval(() => createBubbles(3), 4000);
 });
