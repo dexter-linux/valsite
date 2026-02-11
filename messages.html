@@ -71,7 +71,7 @@
                 document.getElementById('chatInterface').style.display = 'flex';
                 document.getElementById('welcomeUser').innerText = "For " + user;
                 loadMessages();
-                setInterval(loadMessages, 15000); // auto-refresh every 15 seconds
+                setInterval(loadMessages, 600000); // auto-refresh every 60 seconds
             } else {
                 document.getElementById('loginError').style.display = 'block';
                 document.getElementById('passInput').value = "";
