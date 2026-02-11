@@ -56,8 +56,9 @@
         const ENTRY_MESSAGE   = "entry.262317851";
         const ENTRY_ATTACH    = "entry.1055245339";
 
-        // Use CORS proxy — IMPORTANT: Visit https://cors-anywhere.herokuapp.com/ first in your browser and request temporary access!
-        const SHEET_CSV_URL = "https://cors-anywhere.herokuapp.com/https://docs.google.com/spreadsheets/d/e/2PACX-1vQzoKVF_bSr6HWRrmnjlcwHie_OAfinkk4YBkDfWtDnoJ6yyNQSactFMqvqc0Hmy4N3JQGqN_gVqpbU/pub?output=csv";
+        const SHEET_CSV_URL = "https://api.allorigins.win/raw?url=" + encodeURIComponent(
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQzoKVF_bSr6HWRrmnjlcwHie_OAfinkk4YBkDfWtDnoJ6yyNQSactFMqvqc0Hmy4N3JQGqN_gVqpbU/pub?output=csv"
+);
 
         let currentUser = "";
 
