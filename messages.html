@@ -15,14 +15,14 @@
         <div class="container" style="max-width: 350px; padding: 30px; background: rgba(255,255,255,0.95); border-radius: 20px;">
             <h1 style="font-family: 'Great Vibes'; font-size: 3rem; color: #d81b60; margin-bottom: 10px;">MIDARA</h1>
             <p style="margin-bottom: 20px; color: #666;">Unlock our whispers, love.</p>
-            
+           
             <select id="userSelect" style="width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 10px; border: 1px solid #ffb6c1; background: white;">
                 <option value="" disabled selected>Who are you?</option>
                 <option value="Mideva">Mideva</option>
                 <option value="Gachara">Gachara</option>
             </select>
             <input type="password" id="passInput" placeholder="Secret Code" style="width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 10px; border: 1px solid #ffb6c1;">
-            
+           
             <button onclick="checkLogin()" class="modal-btn" style="width: 100%; background: #ff69b4; color: white; border: none; padding: 12px; border-radius: 25px; cursor: pointer; font-weight: bold;">Enter the Deep ✨</button>
             <p id="loginError" style="color: #d81b60; font-size: 0.85rem; margin-top: 15px; display: none;">That's not our code, pearl. ❤️</p>
         </div>
@@ -36,11 +36,11 @@
                 <button onclick="logout()" style="background:none;border:none;color:#d81b60;cursor:pointer;text-decoration:underline;">Logout</button>
             </div>
         </header>
-        
+       
         <div class="chat-box" id="chatBox" style="flex-grow: 1; overflow-y: auto; background: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 12px; border: 1px solid #fce4ec;">
             <p style="text-align: center; color: #ff69b4; font-style: italic;">Sifting through the tides...</p>
         </div>
-        
+       
         <div class="input-area" style="background: #fff5f7; padding: 15px; border-radius: 15px;">
             <input type="text" id="msgInput" placeholder="Write a whisper..." style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ffb6c1; margin-bottom: 10px;">
             <input type="text" id="attachInput" placeholder="Attachment URL (e.g. https://raw.githubusercontent.com/.../us.jpg)" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ffb6c1; font-size: 0.8rem; margin-bottom: 10px;">
@@ -56,9 +56,9 @@
         const ENTRY_MESSAGE   = "entry.262317851";
         const ENTRY_ATTACH    = "entry.1055245339";
 
-        const SHEET_CSV_URL = "https://api.allorigins.win/raw?url=" + encodeURIComponent(
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQzoKVF_bSr6HWRrmnjlcwHie_OAfinkk4YBkDfWtDnoJ6yyNQSactFMqvqc0Hmy4N3JQGqN_gVqpbU/pub?output=csv"
-);
+        // Using allorigins.win proxy (no activation needed)
+        const GOOGLE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQzoKVF_bSr6HWRrmnjlcwHie_OAfinkk4YBkDfWtDnoJ6yyNQSactFMqvqc0Hmy4N3JQGqN_gVqpbU/pub?output=csv";
+        const SHEET_CSV_URL = "https://api.allorigins.win/raw?url=" + encodeURIComponent(GOOGLE_CSV_URL);
 
         let currentUser = "";
 
@@ -71,7 +71,7 @@
                 document.getElementById('chatInterface').style.display = 'flex';
                 document.getElementById('welcomeUser').innerText = "For " + user;
                 loadMessages();
-                setInterval(loadMessages, 15000); // Refresh every 15s
+                setInterval(loadMessages, 15000); // auto-refresh every 15 seconds
             } else {
                 document.getElementById('loginError').style.display = 'block';
                 document.getElementById('passInput').value = "";
@@ -82,6 +82,7 @@
             const text = document.getElementById('msgInput').value.trim();
             const attach = document.getElementById('attachInput').value.trim();
             const btn = document.getElementById('sendBtn');
+
             if (!text && !attach) return;
 
             btn.disabled = true;
@@ -96,10 +97,10 @@
                 await fetch(GOOGLE_FORM_URL, { method: 'POST', mode: 'no-cors', body: formData });
                 document.getElementById('msgInput').value = "";
                 document.getElementById('attachInput').value = "";
-                document.getElementById('chatBox').innerHTML = '<p style="text-align:center;color:#ff69b4;font-style:italic;">Whisper sent! Refreshing soon... 🌊</p>';
-                setTimeout(loadMessages, 6000); // Give Google time to process
+                document.getElementById('chatBox').innerHTML = '<p style="text-align:center;color:#ff69b4;font-style:italic;">Whisper sent! Loading updates soon... 🌊</p>';
+                setTimeout(loadMessages, 6000); // give Google Forms time to process
             } catch (err) {
-                console.error(err);
+                console.error("Send error:", err);
             } finally {
                 btn.disabled = false;
                 btn.innerText = "Send Whisper 🌊";
@@ -108,18 +109,24 @@
 
         async function loadMessages() {
             const box = document.getElementById('chatBox');
-            box.innerHTML = '<p style="text-align:center;color:#ff69b4;font-style:italic;">Loading whispers...</p>';
+            box.innerHTML = '<p style="text-align:center;color:#ff69b4;font-style:italic;">Loading whispers from the deep...</p>';
 
             try {
-                const res = await fetch(SHEET_CSV_URL + "?t=" + Date.now());
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const csvText = await res.text();
+                // Add cache-busting timestamp
+                const urlWithCacheBust = SHEET_CSV_URL + (SHEET_CSV_URL.includes('?') ? '&' : '?') + "t=" + Date.now();
+                const res = await fetch(urlWithCacheBust);
 
+                if (!res.ok) {
+                    throw new Error(`Proxy responded with HTTP ${res.status}`);
+                }
+
+                const csvText = await res.text();
                 const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
+
                 box.innerHTML = "";
 
-                if (parsed.data.length === 0 || parsed.data.every(row => !row.Sender)) {
-                    box.innerHTML = "<p style='text-align:center;color:#ff69b4;'>No whispers yet... be the first ♡</p>";
+                if (parsed.data.length === 0 || parsed.data.every(row => !row.Sender?.trim())) {
+                    box.innerHTML = "<p style='text-align:center;color:#ff69b4;'>No whispers yet... be the first to send one ♡</p>";
                     return;
                 }
 
@@ -171,7 +178,11 @@
                 box.scrollTop = box.scrollHeight;
             } catch (e) {
                 console.error("Load error:", e);
-                box.innerHTML = `<p style="text-align:center;color:#d81b60;">Couldn't reach the ocean... (CORS/fetch error)<br>Try refreshing or check console. 🌊</p>`;
+                box.innerHTML = `<p style="text-align:center;color:#d81b60;">
+                    Couldn't load whispers...<br>
+                    (Possible issues: proxy down, network, or Google delay)<br>
+                    Try Refresh button or check browser console (F12).<br>🌊
+                </p>`;
             }
         }
 
