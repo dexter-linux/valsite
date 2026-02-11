@@ -6,75 +6,203 @@
     <title>My Ocean Heart Asks: Will You Be My Valentine, Lavender?</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
-    <a href="scroll.html" class="nav-link">View Our Poem Scroll 📜✨</a>
-<p><a href="album.html" class="nav-link">View Our Pearl Gallery Album 🌸📸</a></p>
-    <p>
-    <a href="messages.html" class="nav-link">
-        Messages 💌 <span id="msgBadge" class="unread-badge" style="display:none;">0</span>
-    </a>
-</p>
 
-<script>
-    // Logic to show unread badge
-    // Since we don't know who is looking at the home page, 
-    // we check for both. In a real app, the login happens first.
-    window.addEventListener('load', () => {
-        const u1 = parseInt(localStorage.getItem('unread_Mideva') || 0);
-        const u2 = parseInt(localStorage.getItem('unread_Gachara') || 0);
-        const total = u1 + u2;
-        if(total > 0) {
-            const badge = document.getElementById('msgBadge');
-            badge.style.display = 'inline';
-            badge.innerText = total;
-        }
-    });
-</script>
-</head>
-<body>
-    <audio id="bgMusic" autoplay loop>
-        <source src="song.mp3" type="audio/mpeg">
-        Your browser does not support the audio element.
-    </audio>
-
-    <div class="aquarium-bg"></div>
-    <div class="bubbles"></div>
-
-    <!-- Moving fish -->
-    <div class="fish goldfish1"></div>
-    <div class="fish goldfish2"></div>
-    <div class="fish whitefish1"></div>
-    <div class="fish whitefish2"></div>
-
-    <div class="container">
-        <img src="image.jpg" alt="Our special moment" class="personal-img">
-
-        <div class="lily-corner top-left"></div>
-        <div class="lily-corner top-right"></div>
-        <div class="lily-corner bottom-left"></div>
-        <div class="lily-corner bottom-right"></div>
-
-        <div class="heart"></div>
-
-        <h1>My Dearest Lavender Mideva Eboso,</h1>
-
-        <p>In the tranquil depths of this jade-green sea, my heart swims freely — guided by your light, colored by your warmth.</p>
-        <p>Like pure white lilies blooming serenely on still waters, you bring grace and peace to my soul. Like shimmering goldfish gliding through emerald currents, your presence fills my days with joy and gentle wonder.</p>
-
-        <p>You are the pearl of irreplaceable value, the soft glow in every ripple, the melody carried on underwater whispers. Every bubble carries a dream of us, every graceful swim reminds me how deeply I long to be near you.</p>
-
-        <h2>Will you be my Valentine, Lavender?</h2>
-
-        <div class="buttons">
-            <button id="yesBtn">Yes, forever! 🌊💚✨</button>
-            <button id="noBtn">Not yet... 😔</button>
-        </div>
-
-        <div id="response" class="hidden"></div>
+    <!-- Navigation links (visible after login) -->
+    <div style="position: absolute; top: 15px; left: 15px; z-index: 10;">
+        <a href="scroll.html" class="nav-link">View Our Poem Scroll 📜✨</a><br>
+        <a href="album.html" class="nav-link">View Our Pearl Gallery Album 🌸📸</a><br>
+        <a href="messages.html" class="nav-link">
+            Messages 💌 <span id="msgBadge" class="unread-badge" style="display:none;">0</span>
+        </a>
     </div>
 
-    <!-- Scroll to Top Button -->
-    <button id="scrollToTop" title="Back to Top">↑</button>
+    <style>
+        /* Login overlay - same as messages.html */
+        #loginOverlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .login-box {
+            background: rgba(255,255,255,0.95);
+            padding: 40px;
+            border-radius: 25px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(216,27,96,0.3);
+            max-width: 380px;
+            width: 90%;
+        }
+        .login-box h1 {
+            font-family: 'Great Vibes', cursive;
+            color: #d81b60;
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+        }
+        select, input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin: 12px 0;
+            border: 1px solid #ffb6c1;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+        .login-btn {
+            width: 100%;
+            background: #ff69b4;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+        #loginError {
+            color: #d81b60;
+            margin-top: 15px;
+            display: none;
+        }
+        /* Hide main content until logged in */
+        body.logged-in #mainContent { display: block; }
+        body:not(.logged-in) #mainContent { display: none; }
+    </style>
+
+    <script>
+        // Unread badge logic (unchanged)
+        window.addEventListener('load', () => {
+            const u1 = parseInt(localStorage.getItem('unread_Mideva') || 0);
+            const u2 = parseInt(localStorage.getItem('unread_Gachara') || 0);
+            const total = u1 + u2;
+            if(total > 0) {
+                const badge = document.getElementById('msgBadge');
+                badge.style.display = 'inline';
+                badge.innerText = total;
+            }
+        });
+    </script>
+</head>
+<body class=""> <!-- class="logged-in" added by JS -->
+
+    <!-- Login Screen -->
+    <div id="loginOverlay">
+        <div class="login-box">
+            <h1>MIDARA</h1>
+            <p style="color:#666; margin-bottom:25px;">Enter our secret ocean world, love ♡</p>
+
+            <select id="userSelect">
+                <option value="" disabled selected>Who swims in today?</option>
+                <option value="Mideva">Mideva (Lavender)</option>
+                <option value="Gachara">Gachara</option>
+            </select>
+
+            <input type="password" id="passInput" placeholder="Secret code...">
+
+            <button class="login-btn" onclick="checkLogin()">Dive In ✨🌊</button>
+
+            <p id="loginError">Wrong code, pearl... try again ❤️</p>
+        </div>
+    </div>
+
+    <!-- Main Content (hidden until login) -->
+    <div id="mainContent">
+        <audio id="bgMusic" autoplay loop>
+            <source src="song.mp3" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+
+        <div class="aquarium-bg"></div>
+        <div class="bubbles"></div>
+
+        <!-- Moving fish -->
+        <div class="fish goldfish1"></div>
+        <div class="fish goldfish2"></div>
+        <div class="fish whitefish1"></div>
+        <div class="fish whitefish2"></div>
+
+        <div class="container">
+            <img src="image.jpg" alt="Our special moment" class="personal-img">
+
+            <div class="lily-corner top-left"></div>
+            <div class="lily-corner top-right"></div>
+            <div class="lily-corner bottom-left"></div>
+            <div class="lily-corner bottom-right"></div>
+
+            <div class="heart"></div>
+
+            <h1>My Dearest Lavender Mideva Eboso,</h1>
+
+            <p>In the tranquil depths of this jade-green sea, my heart swims freely — guided by your light, colored by your warmth.</p>
+            <p>Like pure white lilies blooming serenely on still waters, you bring grace and peace to my soul. Like shimmering goldfish gliding through emerald currents, your presence fills my days with joy and gentle wonder.</p>
+
+            <p>You are the pearl of irreplaceable value, the soft glow in every ripple, the melody carried on underwater whispers. Every bubble carries a dream of us, every graceful swim reminds me how deeply I long to be near you.</p>
+
+            <h2>Will you be my Valentine, Lavender?</h2>
+
+            <div class="buttons">
+                <button id="yesBtn">Yes, forever! 🌊💚✨</button>
+                <button id="noBtn">Not yet... 😔</button>
+            </div>
+
+            <div id="response" class="hidden"></div>
+        </div>
+
+        <!-- Scroll to Top Button -->
+        <button id="scrollToTop" title="Back to Top">↑</button>
+
+        <!-- Logout button (top right, after login) -->
+        <button onclick="logout()" style="position: fixed; top: 15px; right: 15px; background:#ff69b4; color:white; border:none; padding:8px 16px; border-radius:20px; cursor:pointer; z-index:10;">
+            Logout 🌊
+        </button>
+    </div>
 
     <script src="script.js"></script>
+
+    <!-- Login/Session Logic -->
+    <script>
+        const PASSWORDS = {
+            "Mideva": "lavender2026",
+            "Gachara": "gachara2026"
+        };
+
+        function checkLogin() {
+            const user = document.getElementById('userSelect').value;
+            const pass = document.getElementById('passInput').value;
+            const error = document.getElementById('loginError');
+
+            if (user && PASSWORDS[user] === pass) {
+                localStorage.setItem('midara_session', user);
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.body.classList.add('logged-in');
+                // Optional: play music only after login if you prefer
+                // document.getElementById('bgMusic').play();
+            } else {
+                error.style.display = 'block';
+                document.getElementById('passInput').value = '';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('midara_session');
+            document.getElementById('loginOverlay').style.display = 'flex';
+            document.body.classList.remove('logged-in');
+            document.getElementById('passInput').value = '';
+            document.getElementById('loginError').style.display = 'none';
+        }
+
+        // Auto-login if session exists
+        window.addEventListener('load', () => {
+            const savedUser = localStorage.getItem('midara_session');
+            if (savedUser && PASSWORDS[savedUser]) {
+                document.getElementById('userSelect').value = savedUser;
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.body.classList.add('logged-in');
+            }
+        });
+    </script>
 </body>
 </html>
